@@ -7,32 +7,104 @@
   <canvas width=800 height=800></canvas>
   <script>
 
+    // simple renderer:
+    // player: { color: HtmlColour, lines: [{start: [x,y], end: [x,y]}] }
+    //
+    // lines should be whole journey from start of game
+
     main()
 
-    function draw(ctx,paths) {
-      ctx.clearRect(0,0,ctx.width,ctx.height)
+    function draw(ctx,players) {
+      ctx.clearRect(0,0,ctx.canvas.width,ctx.canvas.height)
       ctx.lineWidth = 4
-      ctx.translate(25,25)
-      ctx.scale(2,2)
-      paths.forEach(function(path) {
-        if(path.points.length === 0) return
-        ctx.beginPath()
-        ctx.strokeStyle = path.color
-        var start = path.points.shift()
-        ctx.moveTo(start[0],start[1])
-        path.points.forEach(function(point) {
-          ctx.lineTo(point[0],point[1])
+      players.forEach(function(player) {
+        ctx.strokeStyle = player.color
+        player.lines.forEach(function(line) {
+          ctx.beginPath()
+          var start = line.start
+          var end = line.end
+          ctx.moveTo(start[0],start[1])
+          ctx.lineTo(end[0],end[1])
+          ctx.stroke()
         })
-        ctx.stroke()
       })
-
     }
+
+    function loop(fn) {
+      var start = Date.now()
+      function looper() {
+        window.requestAnimationFrame(function() {
+          fn(Date.now() - start)
+          looper()
+        })
+      }
+      looper()
+    }
+
     function main() {
       var ctx = document.body.querySelector("canvas").getContext("2d")
-      draw(ctx,[
-      {color: "red",points: [[0,0],[0,25],[25,25],[25,100]]},
-      {color: "blue",points: [[10,10],[35,10],[35,35],[110,35]]}
-      ])
+      ctx.scale(4,4)
+      ctx.translate(10,10) // pad
+      var playerTweens = [
+        {color: "red",
+         lines: [
+           function(dt) {
+             return {
+               start: [0,0],
+               end: [0,tween(0,100,0,1000)(dt)]
+             }
+           },
+           function(dt) {
+             if(dt < 1000) return
+             return {
+               start: [0,100],
+               end: [tween(0,50,1000,500)(dt),100]
+             }
+           }
+         ]
+        },
+        {color: "blue",
+         lines: [
+           function(dt) {
+             return {
+               start: [15,0],
+               end: [15,tween(0,100,0,1200)(dt)]
+             }
+           }
+         ]
+        }
+      ]
+      var next
+      loop(function(dt) {
+        // replace this code with the
+        // current set of players
+        next = playerTweens.map(function(player) {
+          var newPlayer = {color: player.color}
+          newPlayer.lines =  makeConcrete(dt,player.lines)
+          return newPlayer
+        })
+        draw(ctx,next)
+      })
     }
+
+
+    
+    function tween(start,end,startTime,overMilli) {
+      var diff = end - start
+      return function(dt) {
+        dt = dt - startTime
+        if(dt > overMilli) return end
+        return (dt / overMilli) * diff
+      }
+    }
+
+    function makeConcrete(dt,list) {
+      return list.reduce(function(all,item) {
+        var atTime = item(dt)
+        if(!atTime) return all
+        return all.concat(atTime)
+      },[])
+    }
+
   </script>
 </body>
