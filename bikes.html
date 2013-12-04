@@ -1,0 +1,38 @@
+<body>
+  <style>
+    body {
+      background: #444;
+    }
+  </style>
+  <canvas width=800 height=800></canvas>
+  <script>
+
+    main()
+
+    function draw(ctx,paths) {
+      ctx.clearRect(0,0,ctx.width,ctx.height)
+      ctx.lineWidth = 4
+      ctx.translate(25,25)
+      ctx.scale(2,2)
+      paths.forEach(function(path) {
+        if(path.points.length === 0) return
+        ctx.beginPath()
+        ctx.strokeStyle = path.color
+        var start = path.points.shift()
+        ctx.moveTo(start[0],start[1])
+        path.points.forEach(function(point) {
+          ctx.lineTo(point[0],point[1])
+        })
+        ctx.stroke()
+      })
+
+    }
+    function main() {
+      var ctx = document.body.querySelector("canvas").getContext("2d")
+      draw(ctx,[
+      {color: "red",points: [[0,0],[0,25],[25,25],[25,100]]},
+      {color: "blue",points: [[10,10],[35,10],[35,35],[110,35]]}
+      ])
+    }
+  </script>
+</body>
