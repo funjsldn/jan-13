@@ -12,14 +12,15 @@
     //
     // lines should be whole journey from start of game
 
-    main()
 
-    function draw(ctx,players) {
+    function draw(ctx,world,dt) {
       ctx.clearRect(0,0,ctx.canvas.width,ctx.canvas.height)
       ctx.lineWidth = 4
+      var players = [world.player]
       players.forEach(function(player) {
         ctx.strokeStyle = player.color
-        player.lines.forEach(function(line) {
+        var lines = directionsToLines(player.directions,dt)
+        lines.forEach(function(line) {
           ctx.beginPath()
           var start = line.start
           var end = line.end
@@ -30,81 +31,212 @@
       })
     }
 
+    Object.defineProperty(Object.prototype,"tap",{
+      enumerable: false,
+      value: function(fn) {
+        fn(this); return this
+      }
+    })
+    var log = console.log.bind(console)
+    var jlog = function(x) {
+      log(JSON.stringify(x))
+    }
+
+    var SPEED = 0.05
+    function directionsToLines(directionsAndDt,deltaTime) {
+      var commandPairs = toList(directionsAndDt).concat({dt: deltaTime})
+      var deltas = partition(commandPairs).map(function(pair) {
+        var curr = pair[0] 
+        var end = pair[1] 
+        var dt = end.dt - curr.dt
+        var direction = curr.direction
+        return [dt * direction[0] * SPEED,dt * direction[1] * SPEED]
+      })
+      return deltas.reduce(function(all,deltas,index) {
+        if(index === 0) return [{start: [0,0], end: deltas}]
+        var prev = all[index - 1].end
+        return all.concat({start: prev, end: 
+          [ prev[0] + deltas[0],
+          prev[1] + deltas[1] ]})
+      },[]).tap(jlog)
+    }
+
+    // [a,b,c,d] -> [a,b],[b,c],[c,d]
+    function partition(list) {
+      return list.reduce(function(all,curr,index,arr) {
+        if(!arr[index + 1]) return all
+        return all.concat([[curr,arr[index + 1]]])
+      },[])
+    }
+    test("partition",function() {
+      var list = ["a","b","c","d"]
+      var pd = partition(list)
+      assert(pd[1][0] === "b","wrong")
+      assert(pd[1][1] === "c","wrong")
+      assert(pd[2][1] === "d","wrong")
+    })
+
     function loop(fn) {
       var start = Date.now()
       function looper() {
-        window.requestAnimationFrame(function() {
+        animate(function() {
           fn(Date.now() - start)
           looper()
         })
       }
       looper()
     }
+    function animate(fn) {
+      window.requestAnimationFrame(fn)
+      //setTimeout(fn,1000/15)
+    }
+
 
     function main() {
       var ctx = document.body.querySelector("canvas").getContext("2d")
-      ctx.scale(4,4)
+      ctx.scale(6,6)
       ctx.translate(10,10) // pad
-      var playerTweens = [
-        {color: "red",
-         lines: [
-           function(dt) {
-             return {
-               start: [0,0],
-               end: [0,tween(0,100,0,1000)(dt)]
-             }
-           },
-           function(dt) {
-             if(dt < 1000) return
-             return {
-               start: [0,100],
-               end: [tween(0,50,1000,500)(dt),100]
-             }
-           }
-         ]
-        },
-        {color: "blue",
-         lines: [
-           function(dt) {
-             return {
-               start: [15,0],
-               end: [15,tween(0,100,0,1200)(dt)]
-             }
-           }
-         ]
-        }
-      ]
-      var next
+      var world = makeWorld()
+      var commands = listener()
       loop(function(dt) {
         // replace this code with the
         // current set of players
-        next = playerTweens.map(function(player) {
-          var newPlayer = {color: player.color}
-          newPlayer.lines =  makeConcrete(dt,player.lines)
-          return newPlayer
-        })
-        draw(ctx,next)
+        world = update(world,commands(),dt)
+        draw(ctx,world,dt)
       })
     }
 
+    var DIRECTIONS = {
+      up: [0,-1],
+      right: [1,0],
+      down: [0,1],
+      left: [-1,0]
+    }
+    var DIRECTION_ORDER = [DIRECTIONS.up,DIRECTIONS.right,DIRECTIONS.down,DIRECTIONS.left]
+    function changeDirection(current,isRight) {
+      assert(!!current,"can't change null dir")
+      var diff = isRight ? 1 : -1
+      var currentIndex = DIRECTION_ORDER.indexOf(current)
+      var newIndex = currentIndex + diff
+      newIndex = newIndex >= 0 ? newIndex % DIRECTION_ORDER.length : DIRECTION_ORDER.length + newIndex
+      assert(newIndex >= 0,"must be positive")
+      assert(newIndex < DIRECTION_ORDER.length,"must be in bounds")
+      var dir = DIRECTION_ORDER[newIndex]
+      assert(dir,"Can't return nil dir")
+      return dir
+    }
 
-    
-    function tween(start,end,startTime,overMilli) {
-      var diff = end - start
-      return function(dt) {
-        dt = dt - startTime
-        if(dt > overMilli) return end
-        return (dt / overMilli) * diff
+    function listener() {
+      var command = {
+        turn: false
+      }
+      function turn(cmd) {
+        command = {turn: cmd}
+      }
+      document.body.onkeypress = function(event) {
+        switch(event.keyCode) {
+        case 39: 
+        case 100: 
+        return turn("right")
+        case 37:
+        case 97: 
+        return turn("left")
+        }
+      }
+      return function() {
+        var returner = command
+        command = {turn: false}
+        return returner
       }
     }
 
-    function makeConcrete(dt,list) {
-      return list.reduce(function(all,item) {
-        var atTime = item(dt)
-        if(!atTime) return all
-        return all.concat(atTime)
-      },[])
+    function makeWorld() {
+      return {
+        player: {
+          color: "blue",
+          directions: cons({dt: 0, direction: DIRECTIONS.down})
+        }
+      }
     }
+
+    function cons(value,list) {
+      if(list) return { value: value, prev: list }
+      return {value: value}
+    }
+    function toList(linked) {
+      var all = []
+      while(linked) {
+        all.unshift(linked.value)
+        linked = linked.prev
+      }
+      return all
+    }
+    function mapChain(linked,fn) {
+      var all = []
+      while(linked) {
+        all.push(fn(linked.value))
+        linked = linked.prev
+      }
+      return all
+    }
+
+    function tap(x) {
+      console.log(x); return x
+    }
+    function assertTap(x) {
+      if(!x) {
+        console.error(x)
+        debugger
+      }
+      return x
+    }
+
+    
+    function update(world, commands, dt) {
+      var player = world.player
+      if(commands.turn) {
+        var newDirection = changeDirection(player.directions.value.direction,commands.turn === "right")
+        player.directions = cons({ dt: dt, direction: newDirection},player.directions)
+      }
+      return world
+    }
+
+    function assert(t,msg) {
+      if(!t) {
+        debugger
+        throw new Error(msg)
+      }
+    }
+    function test(msg,fn) {
+      try {
+        fn()
+      } catch(e) {
+        console.error("Failed: %s, %s",msg,e.message)
+      }
+    }
+    test("change direction loops",function() {
+      var n = 5
+      var direction = DIRECTIONS.up
+      while(n--) direction = changeDirection(direction,true)
+      assert(direction == DIRECTIONS.right,"5 turns from up is right")
+    })
+    test("change direction",function() {
+      var direction = changeDirection(DIRECTIONS.up,true)
+      assert(direction == DIRECTIONS.right,"1 turns from up is right")
+    })
+    test("change direction left",function() {
+      var direction = changeDirection(DIRECTIONS.up,false)
+      assert(direction == DIRECTIONS.left,"1 turns from up is left")
+    })
+    test("change direction left lots",function() {
+      var direction = DIRECTIONS.up
+      var n = 5
+      while(n--) direction = changeDirection(direction,false)
+      assert(direction == DIRECTIONS.left,"5 left from up is left")
+    })
+
+
+    main()
 
   </script>
 </body>
