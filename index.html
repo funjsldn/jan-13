@@ -1,78 +1,86 @@
 <!DOCTYPE html>
 <head>
-    <meta charset="utf-8">  
-    <title>λλλλλλλ</title>
-    <link rel="stylesheet" href="reveal/css/reveal.css">
-    <link rel="stylesheet" href="reveal/css/theme/moon.css" id="theme">
-    <!-- <link rel="stylesheet" href="reveal/css/print/pdf.css"> -->
+  <meta charset="utf-8">  
+  <title>λλλλλλλ</title>
+  <link rel="stylesheet" href="reveal/css/reveal.css">
+  <link rel="stylesheet" href="reveal/css/theme/moon.css" id="theme">
+  <!-- <link rel="stylesheet" href="reveal/css/print/pdf.css"> -->
 
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- For syntax highlighting reveal/-->
-    <link rel="stylesheet" href="reveal/lib/css/zenburn.css">
+  <!-- For syntax highlighting reveal/-->
+  <link rel="stylesheet" href="reveal/lib/css/zenburn.css">
 </head>
 
 <body>
 
-<div class="reveal">
-<div class="slides">
+  <div class="reveal">
+    <div class="slides">
 
-<section data-markdown data-state="highlight"><script type="text/template">
+      <section data-markdown data-state="highlight"><script type="text/template">
 
-  # Fun JS December
+          # Fun JS January
 
-  ![funjs rocks](logo.png)
+          ![funjs rocks](logo.png)
 
-</script></section>
+      </script></section>
 
-<section data-markdown data-state="highlight"><script type="text/template">
+      <section data-markdown data-state="highlight"><script type="text/template">
 
-  # Agenda
+          # Agenda
 
-  ## Madeness in our Methods - Hugh FD Jackson
-  ## Dojo - Tron Lightbikes
+          ## Functional Front-end: ClojureScript - Thomas G. Kristensen
+          ## Dojo - ClojureScript
 
-</script></section>
+      </script></section>
 
-<section data-markdown data-state="highlight"><script type="text/template">
+      <section data-markdown data-state="highlight"><script type="text/template">
 
-  # Dojo
+          # Dojo
 
-  ## Build a Tron Lightbike game
-  <br />
-  ## 80 minutes of hackery
-  ## Everybody codes!
-  ## Time per person: 80 / N
-  ## Use whichever JS dialect you like
+          ### Implement a TODO app from skeleton in repo
+          ### David Nolen's LightTable CLJS Tutorial
+          ### Exercises on 4clojure / CLJS Koans
 
-</script></section>
+      </script></section>
+      
+      <section data-markdown data-state="highlight"><script type="text/template">
 
-<section data-markdown data-state="highlight"><script type="text/template">
+          # Dojo
+          
+          ## 80 minutes of hackery
+          ## Everybody codes!
+          ## Time per person: 80 / N
+          <br/>
+          ## Share at the end
 
-  # Rules
+      </script></section>
 
-  ![diag](diagram.png)
+      <section data-markdown data-state="highlight"><script type="text/template">
 
+          # Repo
 
-</script></section>
+          ## [funjsldn/funjs-jan-dojo](https://github.com/funjsldn/funjs-jan-dojo)
 
-<section data-markdown data-state="highlight"><script type="text/template">
+      </script></section>
 
-  # GO!!
+      <section data-markdown data-state="highlight"><script type="text/template">
 
-  ![tron](tron-bikes.jpg)
+          # Discounts!
 
-</script></section>
+          <img src="clj.jpg" style="float: left; width: 48%; margin-right: 2%;">
+          <img src="cljs.jpg" style="float: left; width: 48%;">
 
-</div>
-</div>
+      </script></section>
+    </div>
+  </div>
 
-<script src="reveal/lib/js/head.min.js"></script>
-<script src="reveal/js/reveal.min.js"></script>
-<script>
-  Reveal.initialize({
+  <script src="reveal/lib/js/head.min.js"></script>
+  <script src="reveal/js/reveal.min.js"></script>
+  <script>
+    Reveal.initialize({
 
     // Display controls in the bottom right corner
     controls: false,
@@ -113,14 +121,14 @@
     transition: 'linear', // default/cube/page/concave/zoom/linear/fade/none
 
     dependencies: [
-        // Cross-browser shim that fully implements classList - https://github.com/eligrey/classList.js/
-        { src: 'reveal/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+    // Cross-browser shim that fully implements classList - https://github.com/eligrey/classList.js/
+    { src: 'reveal/lib/js/classList.js', condition: function() { return !document.body.classList; } },
 
-        // Interreveal/pret Markdown in <section> elements
-        { src: 'reveal/plugin/markdown/showdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
-        { src: 'reveal/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+    // Interreveal/pret Markdown in <section> elements
+      { src: 'reveal/plugin/markdown/showdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+      { src: 'reveal/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
 
-        // Syntareveal/x highlight for <code> elements
+      // Syntareveal/x highlight for <code> elements
         { src: 'reveal/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
 
         // Zoom reveal/in and out with Alt+click
@@ -131,12 +139,12 @@
 
         // Remotreveal/e control your reveal.js presentation using a touch device
         // { src: 'reveal/plugin/remotes/remotes.js', async: true, condition: function() { return !!document.body.classList; } }
-    ]
+        ]
 
-  });
-Reveal.addEventListener( 'highlight', function() {
-  console.log("state")
-}, false );
-  
-</script>
+        });
+        Reveal.addEventListener( 'highlight', function() {
+        console.log("state")
+        }, false );
+        
+  </script>
 </body>
